@@ -433,6 +433,7 @@ void MainWindow::on_serverconnected()
     if (tcpserver->hasPendingConnections()) {
         ui->statusBar->showMessage("ok2");
         tcpsocket=tcpserver->nextPendingConnection();
+        TcpHeaderFrameHelper
         connect(tcpsocket,SIGNAL(readyRead()),this,SLOT(readmessage()));
     }
 }

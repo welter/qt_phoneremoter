@@ -98,5 +98,7 @@ private:
 public:
     void sleep(unsigned int msec)    ;
 };
+class TcpServerSocket :QTcpSocket{
 
+}
 #endif // MAINWINDOW_H
