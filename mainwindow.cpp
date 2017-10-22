@@ -433,7 +433,6 @@ void MainWindow::on_serverconnected()
     if (tcpserver->hasPendingConnections()) {
         ui->statusBar->showMessage("ok2");
         tcpsocket=tcpserver->nextPendingConnection();
-        TcpHeaderFrameHelper
         connect(tcpsocket,SIGNAL(readyRead()),this,SLOT(readmessage()));
     }
 }
@@ -539,3 +538,73 @@ QPoint MainWindow::getRealxy(QPoint p)
     printf("x2:%d,y2:%d\n",x,y);
     return QPoint(x,y);
 }
+qint64 TcpServerSocket::dataReceiver()
+{
+    qint32 nRead = 0;
+    qint64 readReturn;
+    QByteArray bytes;
+
+    _isReading = true;
+
+    _currentRead = bytesAvailable();
+    //qDebug () << "nAvailable: " << _currentRead;
+
+    if (_currentRead < TcpHeaderFrameHelper::sizeofHeaderFrame())
+        return 0;
+
+    while (_currentRead >= TcpHeaderFrameHelper::sizeofHeaderFrame())
+    {
+        if (!_waitingForWholeData)
+        {
+            bytes.resize(TcpHeaderFrameHelper::sizeofHeaderFrame());
+            readReturn = read(bytes.data(), TcpHeaderFrameHelper::sizeofHeaderFrame());
+
+            if (readReturn == -1)
+                return -1;
+            nRead += readReturn;
+
+            TcpHeaderFrameHelper::praseHeader(bytes, _headerFrame);
+            _targetLength = _headerFrame.messageLength + TcpHeaderFrameHelper::sizeofHeaderFrame();
+            //qDebug () << "headerFrame length: " << _headerFrame.messageLength;
+        }
+
+        if (_currentRead >= _targetLength)
+        {
+            qint32 length = _targetLength - TcpHeaderFrameHelper::sizeofHeaderFrame();
+            bytes.resize(length);
+            readReturn = read(bytes.data(), length);
+
+            if (readReturn == -1)
+                return -1;
+            nRead += readReturn;
+
+            //qDebug () << "_currentRead: " << _currentRead;
+
+            _waitingForWholeData = false;
+            _currentRead -= _targetLength;
+
+            if(_currentRead == 0)
+                _isReading = false;
+        }
+        //如果不等于headerFrame.messageLength，说明还没读完，继续读取
+        else
+        {
+            _waitingForWholeData = true;
+            break;
+        }
+    }
+
+    return nRead;
+}
+
+qint64 TcpHeaderFrameHelper::sizeofHeaderFrame()
+{
+
+}
+
+void TcpHeaderFrameHelper::praseHeader(QByteArray &data, HeaderFrame &header)
+{
+
+}
+
+

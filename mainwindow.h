@@ -98,7 +98,32 @@ private:
 public:
     void sleep(unsigned int msec)    ;
 };
+
+struct HeaderFrame
+{
+    char s='WTCP';
+    qint64 messageLength;
+};
+
 class TcpServerSocket :QTcpSocket{
 
-}
+public:
+     TcpServerSocket(QObject *parent = Q_NULLPTR);
+     qint64 dataReceiver();
+private:
+     bool _isReading;
+     qint64 _currentRead;
+     qint64 _targetLength;
+     bool _waitingForWholeData;
+     HeaderFrame _headerFrame;
+};
+
+
+
+class TcpHeaderFrameHelper:QObject{
+public:
+    TcpHeaderFrameHelper();
+    static qint64 sizeofHeaderFrame();
+    static void praseHeader(QByteArray& data,HeaderFrame& header);
+};
 #endif // MAINWINDOW_H
