@@ -116,6 +116,7 @@ private:
      qint64 _targetLength;
      bool _waitingForWholeData;
      HeaderFrame _headerFrame;
+     void onFinish();
 };
 
 

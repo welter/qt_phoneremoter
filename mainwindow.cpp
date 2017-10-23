@@ -538,6 +538,15 @@ QPoint MainWindow::getRealxy(QPoint p)
     printf("x2:%d,y2:%d\n",x,y);
     return QPoint(x,y);
 }
+TcpServerSocket::TcpServerSocket(QObject *parent):QTcpSocket(parent)
+{
+
+  _isReading=false;
+  _waitingForWholeData=true;
+  _targetLength=0;
+  connect(this,SIGNAL(readyRead()),this,SLOT(dataReceiver()));
+  connect(this,SIGNAL(disconnected()),this,SLOT(onFinish));
+}
 qint64 TcpServerSocket::dataReceiver()
 {
     qint32 nRead = 0;
@@ -597,6 +606,10 @@ qint64 TcpServerSocket::dataReceiver()
     return nRead;
 }
 
+void TcpServerSocket::onFinish()
+{
+
+}
 qint64 TcpHeaderFrameHelper::sizeofHeaderFrame()
 {
 
