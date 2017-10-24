@@ -432,8 +432,9 @@ void MainWindow::on_serverconnected()
 {
     if (tcpserver->hasPendingConnections()) {
         ui->statusBar->showMessage("ok2");
-        tcpsocket=tcpserver->nextPendingConnection();
-        connect(tcpsocket,SIGNAL(readyRead()),this,SLOT(readmessage()));
+        tcpServerReceiver = tcpserver->nextPendingConnection();
+        //connect(tcpsocket,SIGNAL(readyRead()),this,SLOT(readmessage()));
+        connect(tcpServerReceiver,SIGNAL(onDataReceived(QByteArray d)),this,SLOT(readdata()));
     }
 }
 void MainWindow::sleep(unsigned int msec)
@@ -538,15 +539,21 @@ QPoint MainWindow::getRealxy(QPoint p)
     printf("x2:%d,y2:%d\n",x,y);
     return QPoint(x,y);
 }
-TcpServerSocket::TcpServerSocket(QObject *parent):QTcpSocket(parent)
-{
 
+void MainWindow::readdata(QByteArray d)
+{
+    pictureData.clear();
+    pictureData.append(d);
+}
+TcpServerSocket::TcpServerSocket(QTcpSocket t):QTcpSocket(t->parent())
+{
   _isReading=false;
   _waitingForWholeData=true;
   _targetLength=0;
   connect(this,SIGNAL(readyRead()),this,SLOT(dataReceiver()));
   connect(this,SIGNAL(disconnected()),this,SLOT(onFinish));
 }
+
 qint64 TcpServerSocket::dataReceiver()
 {
     qint32 nRead = 0;
@@ -580,8 +587,8 @@ qint64 TcpServerSocket::dataReceiver()
         if (_currentRead >= _targetLength)
         {
             qint32 length = _targetLength - TcpHeaderFrameHelper::sizeofHeaderFrame();
-            bytes.resize(length);
-            readReturn = read(bytes.data(), length);
+            _data.resize(length);
+            readReturn = read(_data.data(), length);
 
             if (readReturn == -1)
                 return -1;
@@ -591,7 +598,7 @@ qint64 TcpServerSocket::dataReceiver()
 
             _waitingForWholeData = false;
             _currentRead -= _targetLength;
-
+            emit onDataReceived(_data);
             if(_currentRead == 0)
                 _isReading = false;
         }
@@ -610,6 +617,7 @@ void TcpServerSocket::onFinish()
 {
 
 }
+
 qint64 TcpHeaderFrameHelper::sizeofHeaderFrame()
 {
 

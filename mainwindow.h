@@ -11,8 +11,43 @@
 //#include <string>
 //using namespace std;
 namespace Ui {
+
 class MainWindow;
 }
+
+struct HeaderFrame
+{
+    char s='WTCP';
+    qint64 messageLength;
+};
+
+class TcpServerSocket :QTcpSocket
+{
+    Q_OBJECT
+signals:
+     void onDataReceived(QByteArray);
+public:
+//     TcpServerSocket(QObject *parent = Q_NULLPTR);
+     TcpServerSocket(QTcpSocket t);
+     qint64 dataReceiver();
+private:
+     bool _isReading;
+     qint64 _currentRead;
+     qint64 _targetLength;
+     bool _waitingForWholeData;
+     HeaderFrame _headerFrame;
+     QByteArray _data;
+     void onFinish();
+};
+
+
+
+class TcpHeaderFrameHelper:QObject{
+public:
+    TcpHeaderFrameHelper();
+    static qint64 sizeofHeaderFrame();
+    static void praseHeader(QByteArray& data,HeaderFrame& header);
+};
 class QMouseEvent;
 class SendMessage:public QThread
 {
@@ -82,6 +117,8 @@ private slots:
 
     void readmessage();
 
+    void readdata(QByteArray d);
+
 private:
     Ui::MainWindow *ui;
     int m_nTimerId;
@@ -92,6 +129,8 @@ private:
     QPoint getRealxy(QPoint p);
     static int oldx,oldy;
     static bool mousepressed;
+    TcpServerSocket tcpServerReceiver;
+    QByteArray pictureData=QByteArray();
 
 //protected:
 //    void mousePressEvent(QMouseEvent *q);
@@ -99,32 +138,4 @@ public:
     void sleep(unsigned int msec)    ;
 };
 
-struct HeaderFrame
-{
-    char s='WTCP';
-    qint64 messageLength;
-};
-
-class TcpServerSocket :QTcpSocket{
-
-public:
-     TcpServerSocket(QObject *parent = Q_NULLPTR);
-     qint64 dataReceiver();
-private:
-     bool _isReading;
-     qint64 _currentRead;
-     qint64 _targetLength;
-     bool _waitingForWholeData;
-     HeaderFrame _headerFrame;
-     void onFinish();
-};
-
-
-
-class TcpHeaderFrameHelper:QObject{
-public:
-    TcpHeaderFrameHelper();
-    static qint64 sizeofHeaderFrame();
-    static void praseHeader(QByteArray& data,HeaderFrame& header);
-};
 #endif // MAINWINDOW_H
