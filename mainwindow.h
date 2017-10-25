@@ -21,15 +21,18 @@ struct HeaderFrame
     qint64 messageLength;
 };
 
-class TcpServerSocket :QTcpSocket
+class TcpServerReceiver :public QObject
 {
     Q_OBJECT
 signals:
      void onDataReceived(QByteArray);
 public:
 //     TcpServerSocket(QObject *parent = Q_NULLPTR);
-     TcpServerSocket(QTcpSocket t);
+     TcpServerReceiver();
+     TcpServerReceiver(QTcpSocket *t);
+     ~TcpServerReceiver();
      qint64 dataReceiver();
+     QTcpSocket *tcpSocket;
 private:
      bool _isReading;
      qint64 _currentRead;
@@ -129,7 +132,7 @@ private:
     QPoint getRealxy(QPoint p);
     static int oldx,oldy;
     static bool mousepressed;
-    TcpServerSocket tcpServerReceiver;
+    TcpServerReceiver *tcpServerReceiver;
     QByteArray pictureData=QByteArray();
 
 //protected:

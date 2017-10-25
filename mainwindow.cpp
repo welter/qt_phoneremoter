@@ -432,7 +432,7 @@ void MainWindow::on_serverconnected()
 {
     if (tcpserver->hasPendingConnections()) {
         ui->statusBar->showMessage("ok2");
-        tcpServerReceiver = tcpserver->nextPendingConnection();
+        tcpServerReceiver= new TcpServerReceiver(tcpserver->nextPendingConnection());
         //connect(tcpsocket,SIGNAL(readyRead()),this,SLOT(readmessage()));
         connect(tcpServerReceiver,SIGNAL(onDataReceived(QByteArray d)),this,SLOT(readdata()));
     }
@@ -545,16 +545,25 @@ void MainWindow::readdata(QByteArray d)
     pictureData.clear();
     pictureData.append(d);
 }
-TcpServerSocket::TcpServerSocket(QTcpSocket t):QTcpSocket(t->parent())
+TcpServerReceiver::TcpServerReceiver()
+{
+
+}
+TcpServerReceiver::TcpServerReceiver(QTcpSocket *t)
 {
   _isReading=false;
   _waitingForWholeData=true;
   _targetLength=0;
-  connect(this,SIGNAL(readyRead()),this,SLOT(dataReceiver()));
-  connect(this,SIGNAL(disconnected()),this,SLOT(onFinish));
+  tcpSocket=t;
+  connect(this->tcpSocket,SIGNAL(readyRead()),this,SLOT(dataReceiver()));
+  connect(this->tcpSocket,SIGNAL(disconnected()),this,SLOT(onFinish));
 }
 
-qint64 TcpServerSocket::dataReceiver()
+TcpServerReceiver::~TcpServerReceiver()
+{
+
+}
+qint64 TcpServerReceiver::dataReceiver()
 {
     qint32 nRead = 0;
     qint64 readReturn;
@@ -562,7 +571,7 @@ qint64 TcpServerSocket::dataReceiver()
 
     _isReading = true;
 
-    _currentRead = bytesAvailable();
+    _currentRead = tcpSocket->bytesAvailable();
     //qDebug () << "nAvailable: " << _currentRead;
 
     if (_currentRead < TcpHeaderFrameHelper::sizeofHeaderFrame())
@@ -573,7 +582,7 @@ qint64 TcpServerSocket::dataReceiver()
         if (!_waitingForWholeData)
         {
             bytes.resize(TcpHeaderFrameHelper::sizeofHeaderFrame());
-            readReturn = read(bytes.data(), TcpHeaderFrameHelper::sizeofHeaderFrame());
+            readReturn = tcpSocket->read(bytes.data(), TcpHeaderFrameHelper::sizeofHeaderFrame());
 
             if (readReturn == -1)
                 return -1;
@@ -588,7 +597,7 @@ qint64 TcpServerSocket::dataReceiver()
         {
             qint32 length = _targetLength - TcpHeaderFrameHelper::sizeofHeaderFrame();
             _data.resize(length);
-            readReturn = read(_data.data(), length);
+            readReturn = tcpSocket->read(_data.data(), length);
 
             if (readReturn == -1)
                 return -1;
@@ -613,7 +622,7 @@ qint64 TcpServerSocket::dataReceiver()
     return nRead;
 }
 
-void TcpServerSocket::onFinish()
+void TcpServerReceiver::onFinish()
 {
 
 }
