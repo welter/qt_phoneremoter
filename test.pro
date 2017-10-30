@@ -18,7 +18,8 @@ SOURCES += main.cpp\
 INCLUDEPATH += /usr/lib/jvm/jdk1.7.0_80/include\
         /usr/lib/jvm/jdk1.7.0_80/include/linux
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    stringtohex.h
 
 FORMS    += mainwindow.ui
 

@@ -13,34 +13,37 @@
 namespace Ui {
 
 class MainWindow;
+class TcpServerReceiver;
 }
 
 struct HeaderFrame
 {
     char s='WTCP';
-    qint64 messageLength;
+    quint64 messageLength;
 };
 
 class TcpServerReceiver :public QObject
 {
     Q_OBJECT
 signals:
-     void onDataReceived(QByteArray);
+     void onDataReceived(QByteArray d);
 public:
 //     TcpServerSocket(QObject *parent = Q_NULLPTR);
      TcpServerReceiver();
      TcpServerReceiver(QTcpSocket *t);
      ~TcpServerReceiver();
-     qint64 dataReceiver();
      QTcpSocket *tcpSocket;
+public slots:
+     quint64 dataReceiver();
+     void onFinish();
 private:
      bool _isReading;
-     qint64 _currentRead;
-     qint64 _targetLength;
+     quint64 _currentRead;
+     quint64 _targetLength;
      bool _waitingForWholeData;
      HeaderFrame _headerFrame;
      QByteArray _data;
-     void onFinish();
+
 };
 
 
@@ -48,7 +51,7 @@ private:
 class TcpHeaderFrameHelper:QObject{
 public:
     TcpHeaderFrameHelper();
-    static qint64 sizeofHeaderFrame();
+    static quint64 sizeofHeaderFrame();
     static void praseHeader(QByteArray& data,HeaderFrame& header);
 };
 class QMouseEvent;

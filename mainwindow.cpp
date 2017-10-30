@@ -9,6 +9,8 @@
 #include <QMutex>
 #include <QTcpServer>
 #include <QPicture>
+#include <QCryptographicHash>
+#include <stringtohex.h>
 
 const char *RTPHeaderStr="RTPHWELTER";
 
@@ -434,7 +436,7 @@ void MainWindow::on_serverconnected()
         ui->statusBar->showMessage("ok2");
         tcpServerReceiver= new TcpServerReceiver(tcpserver->nextPendingConnection());
         //connect(tcpsocket,SIGNAL(readyRead()),this,SLOT(readmessage()));
-        connect(tcpServerReceiver,SIGNAL(onDataReceived(QByteArray d)),this,SLOT(readdata()));
+        connect(tcpServerReceiver,SIGNAL(onDataReceived(QByteArray)),this,SLOT(readdata(QByteArray)));
     }
 }
 void MainWindow::sleep(unsigned int msec)
@@ -542,8 +544,14 @@ QPoint MainWindow::getRealxy(QPoint p)
 
 void MainWindow::readdata(QByteArray d)
 {
+//    QImage *p;
+    QPicture *p;
+    QDataStream dataStream(&d,QIODevice::ReadOnly);
     pictureData.clear();
     pictureData.append(d);
+    p->load(dataStream.device());
+    ui->statusBar->showMessage(StringToHex(QCryptographicHash::hash(d,QCryptographicHash::Md5)));
+    ui->label->setPicture(*p);
 }
 TcpServerReceiver::TcpServerReceiver()
 {
@@ -552,21 +560,21 @@ TcpServerReceiver::TcpServerReceiver()
 TcpServerReceiver::TcpServerReceiver(QTcpSocket *t)
 {
   _isReading=false;
-  _waitingForWholeData=true;
+  _waitingForWholeData=false;
   _targetLength=0;
   tcpSocket=t;
   connect(this->tcpSocket,SIGNAL(readyRead()),this,SLOT(dataReceiver()));
-  connect(this->tcpSocket,SIGNAL(disconnected()),this,SLOT(onFinish));
+  connect(this->tcpSocket,SIGNAL(disconnected()),this,SLOT(onFinish()));
 }
 
 TcpServerReceiver::~TcpServerReceiver()
 {
 
 }
-qint64 TcpServerReceiver::dataReceiver()
+quint64 TcpServerReceiver::dataReceiver()
 {
     qint32 nRead = 0;
-    qint64 readReturn;
+    quint64 readReturn;
     QByteArray bytes;
 
     _isReading = true;
@@ -627,14 +635,18 @@ void TcpServerReceiver::onFinish()
 
 }
 
-qint64 TcpHeaderFrameHelper::sizeofHeaderFrame()
+quint64 TcpHeaderFrameHelper::sizeofHeaderFrame()
 {
-
+ return 8;
 }
 
 void TcpHeaderFrameHelper::praseHeader(QByteArray &data, HeaderFrame &header)
 {
-
+    quint64 i;
+    QDataStream stream(&data, QIODevice::ReadOnly);
+    stream >> i;
+    //i= (quint64*) data.left(8).data();
+    header.messageLength=i;
 }
 
 
