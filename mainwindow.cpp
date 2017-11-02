@@ -544,18 +544,14 @@ QPoint MainWindow::getRealxy(QPoint p)
 
 void MainWindow::readdata(QByteArray d)
 {
-    QPixmap p;
-    //QPicture p;
+//    QImage *p;
+    QPicture *p;
     QDataStream dataStream(&d,QIODevice::ReadOnly);
     pictureData.clear();
     pictureData.append(d);
-    //p.pictureFormat("jpg");
-    qDebug()<<"load picture successfull?: "<< p.loadFromData(d);
+    p->load(dataStream.device());
     ui->statusBar->showMessage(StringToHex(QCryptographicHash::hash(d,QCryptographicHash::Md5)));
-    //ui->label->setPicture(p);
-    p=p.scaledToHeight(ui->label->height());
-    //p.scaledToWidth(200);
-    ui->label->setPixmap(p);
+    ui->label->setPicture(*p);
 }
 TcpServerReceiver::TcpServerReceiver()
 {
@@ -583,16 +579,12 @@ quint64 TcpServerReceiver::dataReceiver()
 
     _isReading = true;
 
-    if (_waitingForWholeData)
-    {
-        _currentRead = tcpSocket->bytesAvailable()+TcpHeaderFrameHelper::sizeofHeaderFrame();
-    }
-        else _currentRead=tcpSocket->bytesAvailable();
-    qDebug () << "nAvailable: " << _currentRead;
+    _currentRead = tcpSocket->bytesAvailable();
+    //qDebug () << "nAvailable: " << _currentRead;
 
     if (_currentRead < TcpHeaderFrameHelper::sizeofHeaderFrame())
         return 0;
-    qDebug() << "targetLength: " << _targetLength;
+
     while (_currentRead >= TcpHeaderFrameHelper::sizeofHeaderFrame())
     {
         if (!_waitingForWholeData)
@@ -608,7 +600,6 @@ quint64 TcpServerReceiver::dataReceiver()
             _targetLength = _headerFrame.messageLength + TcpHeaderFrameHelper::sizeofHeaderFrame();
             //qDebug () << "headerFrame length: " << _headerFrame.messageLength;
         }
-
 
         if (_currentRead >= _targetLength)
         {
@@ -646,21 +637,16 @@ void TcpServerReceiver::onFinish()
 
 quint64 TcpHeaderFrameHelper::sizeofHeaderFrame()
 {
- return 13;
+ return 8;
 }
 
 void TcpHeaderFrameHelper::praseHeader(QByteArray &data, HeaderFrame &header)
 {
     quint64 i;
-    if (data.mid(0,4)=="WTCP")
-    {
-        QByteArray d=data.mid(4,8);
-        QDataStream stream(&d, QIODevice::ReadOnly);
-        stream >> i;
+    QDataStream stream(&data, QIODevice::ReadOnly);
+    stream >> i;
     //i= (quint64*) data.left(8).data();
-        header.messageLength=i;
-    }
-    else header.messageLength=0;
+    header.messageLength=i;
 }
 
 

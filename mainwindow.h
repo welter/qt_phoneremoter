@@ -20,7 +20,6 @@ struct HeaderFrame
 {
     char s='WTCP';
     quint64 messageLength;
-    bool isPacketed;
 };
 
 class TcpServerReceiver :public QObject
