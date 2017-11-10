@@ -8,6 +8,7 @@
 #include <QThread>
 #include <QPoint>
 #include <QtNetwork/qtcpserver.h>
+#include <settingdialog.h>
 //#include <string>
 //using namespace std;
 namespace Ui {
@@ -60,7 +61,7 @@ class SendMessage:public QThread
 {
     Q_OBJECT
 public:
-    SendMessage(char *host,quint16 port,char *msg);
+    SendMessage(const QString &host,quint16 port,char *msg);
     void run();
 private slots:
     void onTcpConnected();
@@ -99,7 +100,8 @@ public:
     static jobject obj;
     //mothed of getscreen;
     static jmethodID J_getScreen;
-
+    QString _phoneAddr="192.168.0.88";
+    quint16 _phonePort=9500;
 
     ~MainWindow();
 
@@ -124,10 +126,16 @@ private slots:
 
     void readmessage();
 
+    void openSettingsDialog();
+
     void readdata(QByteArray d);
 
+    void on_action_triggered();
+
 private:
+
     Ui::MainWindow *ui;
+    settingDialog *_settingDialog;
     int m_nTimerId;
     int windowwidth,windowheight;
     QTcpSocket *tcpsocket;

@@ -13,15 +13,18 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    settingdialog.cpp
 
 INCLUDEPATH += /usr/lib/jvm/jdk1.7.0_80/include\
         /usr/lib/jvm/jdk1.7.0_80/include/linux
 
 HEADERS  += mainwindow.h \
-    stringtohex.h
+    stringtohex.h \
+    settingdialog.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    settingdialog.ui
 
 DISTFILES += java/ddmlib.jar \
     java/com/android/screenshot/Screenshot.class \

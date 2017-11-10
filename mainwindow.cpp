@@ -44,7 +44,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 //    ui->label->move((ui->centralWidget->width()-ui->label->width())/2,(ui->centralWidget->height()-ui->label->height())/2);
 
-
+    //ui->menuBar->addAction()
+    QAction *menuS=new QAction("设置");
+    bool b=connect(menuS,SIGNAL(triggered()),this,SLOT(openSettingsDialog()));
+    menuBar()->addAction(menuS);
+    //bool b=connect(ui->menuds,SIGNAL(triggered()),this,SLOT(MainWindow::openSettingsDialog()));
     windowheight=432;
     windowwidth=243;
 //    ui->graphicsView->viewport()->installEventFilter(this);
@@ -53,7 +57,7 @@ MainWindow::MainWindow(QWidget *parent) :
         //connect(tcpsocket,SIGNAL(connected()),this,SLOT(tcpconnected()));
         if (tcpserver->listen(QHostAddress("192.168.0.5"),22222)) ui->statusBar->showMessage("ok");
         connect(tcpserver,SIGNAL(newConnection()),this,SLOT(on_serverconnected()));
-       m_nTimerId=-1;
+        m_nTimerId=-1;
         JavaVMInitArgs vm_args;
         JavaVMOption options[3];
         int res;
@@ -174,7 +178,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
                  sprintf(numstr,"%04d",((QMouseEvent*) event)->pos().y());
                  strcat(cmdstr,numstr);
                  ui->statusBar->showMessage(cmdstr);
-                 SendMessage *sender=new SendMessage("172.18.1.8",9500,cmdstr);
+                 SendMessage *sender=new SendMessage(_phoneAddr.trimmed(),_phonePort,cmdstr);
                  sender->start();
                  mousepressed=false;
                    }
@@ -193,7 +197,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
                     sprintf(numstr,"%04d",point.y());
                     strcat(cmdstr,numstr);
                     ui->statusBar->showMessage(cmdstr);
-                    SendMessage *sender=new SendMessage("172.18.1.8",9500,cmdstr);
+                    SendMessage *sender=new SendMessage(_phoneAddr.trimmed(),_phonePort,cmdstr);
                     sender->start();
                     mousepressed=false;
                     }
@@ -218,7 +222,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 //                sprintf(numstr,"%04d",((QKeyEvent*) event)->key());
 //                strcat(cmdstr,numstr);
                 ui->statusBar->showMessage(cmdstr);
-                SendMessage *sender=new SendMessage("172.18.1.8",9500,cmdstr);
+                SendMessage *sender=new SendMessage(_phoneAddr.trimmed(),_phonePort,cmdstr);
                 sender->start();
             }
         else
@@ -350,7 +354,7 @@ void MainWindow::on_backButton_clicked()
 //                sprintf(numstr,"%04d",((QKeyEvent*) event)->key());
 //                strcat(cmdstr,numstr);
     ui->statusBar->showMessage(cmdstr);
-    SendMessage *sender=new SendMessage("172.18.1.8",9500,cmdstr);
+    SendMessage *sender=new SendMessage(_phoneAddr.trimmed(),_phonePort,cmdstr);
     sender->start();
     free(cmdstr);
 }
@@ -368,7 +372,7 @@ void MainWindow::on_homeButton_clicked()
 //                strcat(cmdstr,numstr);
 
         ui->statusBar->showMessage(cmdstr);
-        SendMessage *sender=new SendMessage("172.18.1.8",9500,cmdstr);
+        SendMessage *sender=new SendMessage(_phoneAddr.trimmed(),_phonePort,cmdstr);
         sender->start();
     free(cmdstr);
 }
@@ -387,7 +391,7 @@ void MainWindow::on_menuButton_clicked()
     ui->statusBar->showMessage(cmdstr);
     //tcpsocket->abort();
     //tcpsocket->connectToHost("172.18.1.8",9500);
-    SendMessage *sender=new SendMessage("172.18.1.8",9500,cmdstr);
+    SendMessage *sender=new SendMessage(_phoneAddr.trimmed(),_phonePort,cmdstr);
     sender->start();
     free(cmdstr);
 }
@@ -406,7 +410,7 @@ void MainWindow::on_VOLDownButton_clicked()
     ui->statusBar->showMessage(cmdstr);
     //tcpsocket->abort();
     //tcpsocket->connectToHost("172.18.1.8",9500);
-    SendMessage *sender=new SendMessage("172.18.1.8",9500,cmdstr);
+    SendMessage *sender=new SendMessage(_phoneAddr.trimmed(),_phonePort,cmdstr);
     sender->start();
     free(cmdstr);
 }
@@ -425,7 +429,7 @@ void MainWindow::on_VOLUPButton_clicked()
     ui->statusBar->showMessage(cmdstr);
     //tcpsocket->abort();
     //tcpsocket->connectToHost("172.18.1.8",9500);
-    SendMessage *sender=new SendMessage("172.18.1.8",9500,cmdstr);
+    SendMessage *sender=new SendMessage(_phoneAddr.trimmed(),_phonePort,cmdstr);
     sender->start();
     free(cmdstr);
 }
@@ -465,14 +469,14 @@ void MainWindow::readmessage()
     free(rdstr);
     rdstr=NULL;
 }
-SendMessage::SendMessage(char *host,quint16 port,char *msg)
+SendMessage::SendMessage( const QString &host,quint16 port,char *msg)
 {
  //   QMutexLocker locker(&tcpMutex);
-    printf(host);
+    printf(host.toLatin1().data());
     message=(char*)malloc(strlen(msg));
     strcpy(message,msg);
-    Host=(char*)malloc(strlen(host));
-    strcpy(Host,host);
+    Host=(char*)malloc(host.length());
+    strcpy(Host,host.toLatin1().data());
     Port=port;
     printf("comming:\n");
 
@@ -663,4 +667,17 @@ void TcpHeaderFrameHelper::praseHeader(QByteArray &data, HeaderFrame &header)
     else header.messageLength=0;
 }
 
+void MainWindow::openSettingsDialog()
+{
+   _settingDialog=new settingDialog(this);
+   _settingDialog->setModal(true);
+   _settingDialog->show();
+}
 
+
+void MainWindow::on_action_triggered()
+{
+    _settingDialog=new settingDialog(this);
+    _settingDialog->setModal(true);
+    _settingDialog->show();
+}
