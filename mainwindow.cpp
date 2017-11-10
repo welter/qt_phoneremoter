@@ -535,13 +535,13 @@ void SendMessage::onTcpDisConnected()
 QPoint MainWindow::getRealxy(QPoint p)
 {
 
-    printf("labelwidth:%d,labelheight:%d,width:%d,x:%d,height:%d,y:%d\n",ui->label->width(),ui->label->height(),windowwidth,p.x(),windowheight,p.y());
+    printf("\n labelwidth:%d,labelheight:%d,width:%d,x:%d,height:%d,y:%d\n",ui->label->width(),ui->label->height(),windowwidth,p.x(),windowheight,p.y());
     int x,y;
     double fx=((double) p.x()-((double)ui->label->width()-(double)windowwidth)/2)/(double) windowwidth;
     double fy=((double) p.y()-((double)ui->label->width()-(double)windowheight)/2)/(double) windowheight;
     printf("fx:%f,fy:%f\n",fx,fy);
-    x=fx*720;
-    y=fy*1280;
+    x=fx*_phoneWidth;
+    y=fy*_phoneHeight;
     printf("x2:%d,y2:%d\n",x,y);
     return QPoint(x,y);
 }
@@ -560,6 +560,8 @@ void MainWindow::readdata(QByteArray d)
     p=p.scaledToHeight(ui->label->height());
     //p.scaledToWidth(200);
     ui->label->setPixmap(p);
+    windowheight=p.height();
+    windowwidth=p.width();
 }
 TcpServerReceiver::TcpServerReceiver()
 {
@@ -680,4 +682,11 @@ void MainWindow::on_action_triggered()
     _settingDialog=new settingDialog(this);
     _settingDialog->setModal(true);
     _settingDialog->show();
+}
+
+
+void MainWindow::resizeEvent(const QSize &size, const QSize &oldSize)
+{
+//    windowheight=image->height();
+//    windowwidth=image->width();
 }

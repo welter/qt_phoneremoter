@@ -102,12 +102,17 @@ public:
     static jmethodID J_getScreen;
     QString _phoneAddr="192.168.0.88";
     quint16 _phonePort=9500;
+    quint16 _phoneWidth=1440;
+    quint16 _phoneHeight=2560;
 
     ~MainWindow();
 
 public slots:
     bool eventFilter(QObject *, QEvent *);
 
+
+protected :
+    void resizeEvent(const QSize &size, const QSize &oldSize);
 private slots:
     void on_pushButton_clicked();
     void tcpconnected();

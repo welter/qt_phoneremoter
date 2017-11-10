@@ -75,6 +75,26 @@
     <string>端口：</string>
    </property>
   </widget>
+  <widget class="QLineEdit" name="edPhoneAddr">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>100</y>
+     <width>113</width>
+     <height>29</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="edPhonePort">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>180</y>
+     <width>113</width>
+     <height>29</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections>
